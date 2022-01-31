@@ -4,6 +4,10 @@
   "description": "MongoDB indexes as code",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
+  "files": [
+    "lib",
+    "README.md"
+  ],
   "bin": {
     "syndex": "./bin/syndex.js"
   },
