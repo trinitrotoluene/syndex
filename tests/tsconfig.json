@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "module": "CommonJS",
+    "target": "ES2016",
+    "sourceMap": true,
+    "esModuleInterop": true,
+  },
+  "exclude": [
+    "node_modules",
+  ],
+  "references": [
+    { "path": "../src" }
+  ]
+}
