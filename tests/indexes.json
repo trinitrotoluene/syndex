@@ -1,0 +1,11 @@
+{
+  "test2": [
+    {
+      "name": "test_index",
+      "key": {
+        "weight": 1,
+        "height": 1
+      }
+    }
+  ]
+}
