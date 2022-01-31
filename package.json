@@ -1,9 +1,12 @@
 {
-  "name": "@trinitrotoluene/syndex",
+  "name": "syndex",
   "version": "0.1.0",
   "description": "MongoDB indexes as code",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
+  "bin": {
+    "syndex": "./bin/syndex.js"
+  },
   "scripts": {
     "clean": "rimraf ./lib",
     "build": "npm run clean && tsc --build src",
