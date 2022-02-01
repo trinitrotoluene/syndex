@@ -34,7 +34,10 @@ describe('index definition validation - success', () => {
     it('index - compound (1, -1)', () => {
         const index = {
             name: 'index1',
-            key: { foo: 1 as 1, bar: -1 as -1 }
+            key: {
+                foo: 1 as 1,
+                bar: -1 as -1
+            }
         };
         definitions.coll1 = [index];
 
@@ -43,5 +46,57 @@ describe('index definition validation - success', () => {
 });
 
 describe('index definition validation - failure', () => {
+    let definitions: any = {};
 
+    beforeEach(() => {
+        definitions = {};
+    });
+
+    const getBuffer = () => Buffer.from(JSON.stringify(definitions));
+
+    it('name - not a string', () => {
+        const index = {
+            name: 1,
+            key: {}
+        };
+        definitions.coll1 = [index];
+
+        expect(() => getLocalDefinitionsFromBuffer(getBuffer())).to.throw();
+    });
+
+    it('key - not an object', () => {
+        const index = {
+            name: '1',
+            key: 1
+        };
+        definitions.coll1 = [index];
+
+        expect(() => getLocalDefinitionsFromBuffer(getBuffer())).to.throw();
+    });
+
+    it('key - too deeply nested', () => {
+        const index = {
+            name: '1',
+            key: {
+                a: {
+                    b: 1
+                }
+            }
+        };
+        definitions.coll1 = [index];
+
+        expect(() => getLocalDefinitionsFromBuffer(getBuffer())).to.throw();
+    });
+
+    it('key - invalid index type', () => {
+        const index = {
+            name: '1',
+            key: {
+                a: 'foo'
+            }
+        };
+        definitions.coll1 = [index];
+
+        expect(() => getLocalDefinitionsFromBuffer(getBuffer())).to.throw();
+    });
 });

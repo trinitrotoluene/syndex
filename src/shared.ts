@@ -12,14 +12,16 @@
  */
 
 import { Schema, z } from 'zod';
-import { Db, MongoClient } from 'mongodb';
+import { MongoClient } from 'mongodb';
 import logger from './logger';
+import { DatabaseClient, IDatabaseClient } from './abstractions';
 
-export async function connectToDatabaseAsync (client: MongoClient, database: string): Promise<Db> {
+export async function connectToDatabaseAsync (connectionString: string, database: string): Promise<IDatabaseClient> {
+    const client = new MongoClient(connectionString);
     await client.connect();
     await client.db('admin').command({ ping: 1 });
     logger.debug('connected');
-    return client.db(database);
+    return DatabaseClient(client);
 }
 
 const IndexPropsValidator = z.union([z.literal(1), z.literal(-1)]);

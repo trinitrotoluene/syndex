@@ -1,13 +1,12 @@
 {
-  "test2": [
+  "coll1": [
     {
-      "name": "test_index",
+      "name": "index1",
       "key": {
-        "weight": 1,
-        "height": 1
+        "foo": 1
       },
       "options": {
-        "background": false
+        "background": true
       }
     }
   ]

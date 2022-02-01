@@ -15,23 +15,26 @@ import { readLocalDefinitionsFromFileAsync } from '../local';
 import logger from '../logger';
 import { MongoClient } from 'mongodb';
 import { connectToDatabaseAsync } from '../shared';
-import { diffDatabase } from '../diff';
+import { diffDatabaseAsync } from '../diff';
 import { planDatabase } from '../plan';
 import { createCollection } from './createCollection';
 import { createIndex } from './createIndex';
 import { deleteIndex } from './deleteIndex';
+import { IDatabaseClient } from '../abstractions';
 
 export async function sync (database: any, path: any, opts: { connectionString: any; }) {
     const { connectionString } = opts;
     const localDefinition = await readLocalDefinitionsFromFileAsync(path);
 
     logger.info('connecting');
-    const client = new MongoClient(connectionString);
-
+    let client: IDatabaseClient | undefined = undefined;
     try {
-        const db = await connectToDatabaseAsync(client, database);
-        const dbDiff = await diffDatabase(db, localDefinition);
-        const plan = await planDatabase(db, dbDiff);
+        client = await connectToDatabaseAsync(connectionString, database);
+        if (!client) throw new Error('Client unexpectedly undefined');
+
+        const db = client.getDatabase(database);
+        const dbDiff = await diffDatabaseAsync(db, localDefinition);
+        const plan = await planDatabase(dbDiff);
 
         for (const action of plan) {
             switch (action.type) {
@@ -39,15 +42,15 @@ export async function sync (database: any, path: any, opts: { connectionString: 
                 await createCollection(db, action);
                 break;
             case 'createIndex':
-                await createIndex(db.collection(action.collection), action);
+                await createIndex(await db.getCollection(action.collection), action);
                 break;
             case 'deleteIndex':
-                await deleteIndex(db.collection(action.collection), action);
+                await deleteIndex(await db.getCollection(action.collection), action);
                 break;
             }
         }
     } finally {
         logger.info('closing connection');
-        await client.close();
+        await client?.closeAsync();
     }
 }

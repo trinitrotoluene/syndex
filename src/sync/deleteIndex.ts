@@ -11,11 +11,11 @@
  * limitations under the License.
  */
 
-import { Collection } from 'mongodb';
 import { DeleteIndexAction } from '../shared';
 import logger from '../logger';
+import { ICollection } from '../abstractions';
 
-export async function deleteIndex (collection: Collection, action: DeleteIndexAction) {
-    logger.debug(`deleting index ${action.name} on collection ${action.collection}`);
-    await collection.dropIndex(action.name);
+export async function deleteIndex (collection: ICollection, action: DeleteIndexAction) {
+    logger.debug(`dropping index ${action.name} on collection ${action.collection}`);
+    await collection.dropIndexAsync(action.name);
 }

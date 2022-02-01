@@ -14,31 +14,34 @@
 import { readLocalDefinitionsFromFileAsync } from '../local';
 import logger from '../logger';
 import { Db, MongoClient } from 'mongodb';
-import { DatabaseDiff, diffDatabase } from '../diff';
+import { DatabaseDiff, diffDatabaseAsync } from '../diff';
 import { connectToDatabaseAsync, Plan } from '../shared';
 import { planFromCollectionDiff } from './collections';
 import { planFromIndexDiff } from './indexes';
 import chalk from 'chalk';
+import { IDatabaseClient } from '../abstractions';
 
 export async function plan (database: any, path: any, opts: { connectionString: any; }) {
     const { connectionString } = opts;
     const localDefinition = await readLocalDefinitionsFromFileAsync(path);
 
     logger.info('connecting');
-    const client = new MongoClient(connectionString);
-
+    let client: IDatabaseClient | undefined = undefined;
     try {
-        const db = await connectToDatabaseAsync(client, database);
-        const dbDiff = await diffDatabase(db, localDefinition);
-        await planDatabase(db, dbDiff);
+        client = await connectToDatabaseAsync(connectionString, database);
+        if (!client) throw new Error('Client unexpectedly undefined');
+
+        const db = client.getDatabase(database);
+        const dbDiff = await diffDatabaseAsync(db, localDefinition);
+        await planDatabase(dbDiff);
 
     } finally {
         logger.info('closing connection');
-        await client.close();
+        await client?.closeAsync();
     }
 }
 
-export async function planDatabase(db: Db, diff: DatabaseDiff): Promise<Plan> {
+export async function planDatabase(diff: DatabaseDiff): Promise<Plan> {
     let plan = planFromCollectionDiff([], diff.collections);
     for (const collectionName in diff.indexes) {
         plan = planFromIndexDiff(plan, diff.indexes[collectionName], collectionName);

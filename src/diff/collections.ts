@@ -15,10 +15,11 @@ import { Db } from 'mongodb';
 import { LocalDefinitions } from '../shared';
 import logger from '../logger';
 import chalk from 'chalk';
+import { IDatabase } from '../abstractions';
 
-export async function getRemoteCollectionsAsync (db: Db): Promise<string[]> {
-    const collections = await db.collections();
-    return collections.map(x => x.collectionName);
+export async function getRemoteCollectionsAsync (db: IDatabase): Promise<string[]> {
+    const collections = await db.getCollectionsAsync();
+    return collections.map(x => x.name);
 }
 
 export type CollectionDiff = { existingCollections: string[], newCollections: string[] };
