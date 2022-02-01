@@ -1,6 +1,6 @@
 {
   "name": "syndex",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "MongoDB indexes as code",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
