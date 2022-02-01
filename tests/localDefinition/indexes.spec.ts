@@ -43,6 +43,54 @@ describe('index definition validation - success', () => {
 
         expect(getLocalDefinitionsFromBuffer(getBuffer())).to.deep.eq(definitions);
     });
+
+    it('index - single (2d)', () => {
+        const index = {
+            name: 'index1',
+            key: {
+                foo: '2d' as '2d'
+            }
+        };
+        definitions.coll1 = [index];
+
+        expect(getLocalDefinitionsFromBuffer(getBuffer())).to.deep.eq(definitions);
+    });
+
+    it('index - single (2dsphere)', () => {
+        const index = {
+            name: 'index1',
+            key: {
+                foo: '2dsphere' as '2dsphere'
+            }
+        };
+        definitions.coll1 = [index];
+
+        expect(getLocalDefinitionsFromBuffer(getBuffer())).to.deep.eq(definitions);
+    });
+
+    it('index - single (text)', () => {
+        const index = {
+            name: 'index1',
+            key: {
+                foo: 'text' as 'text'
+            }
+        };
+        definitions.coll1 = [index];
+
+        expect(getLocalDefinitionsFromBuffer(getBuffer())).to.deep.eq(definitions);
+    });
+
+    it('index - single (geoHaystack)', () => {
+        const index = {
+            name: 'index1',
+            key: {
+                foo: 'geoHaystack' as 'geoHaystack'
+            }
+        };
+        definitions.coll1 = [index];
+
+        expect(getLocalDefinitionsFromBuffer(getBuffer())).to.deep.eq(definitions);
+    });
 });
 
 describe('index definition validation - failure', () => {

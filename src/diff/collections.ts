@@ -11,7 +11,6 @@
  * limitations under the License.
  */
 
-import { Db } from 'mongodb';
 import { LocalDefinitions } from '../shared';
 import logger from '../logger';
 import chalk from 'chalk';

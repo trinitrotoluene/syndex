@@ -13,7 +13,6 @@
 
 import { readLocalDefinitionsFromFileAsync } from '../local';
 import logger from '../logger';
-import { MongoClient } from 'mongodb';
 import { connectToDatabaseAsync } from '../shared';
 import { diffDatabaseAsync } from '../diff';
 import { planDatabase } from '../plan';
@@ -29,7 +28,7 @@ export async function sync (database: any, path: any, opts: { connectionString: 
     logger.info('connecting');
     let client: IDatabaseClient | undefined = undefined;
     try {
-        client = await connectToDatabaseAsync(connectionString, database);
+        client = await connectToDatabaseAsync(connectionString);
         if (!client) throw new Error('Client unexpectedly undefined');
 
         const db = client.getDatabase(database);

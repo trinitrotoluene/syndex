@@ -27,7 +27,7 @@ export async function diff (database: any, path: any, opts: { connectionString: 
     logger.info('connecting');
     let client: IDatabaseClient | undefined = undefined;
     try {
-        client = await connectToDatabaseAsync(connectionString, database);
+        client = await connectToDatabaseAsync(connectionString);
         if (!client) throw new Error('Client unexpectedly undefined');
 
         const db = client.getDatabase(database);

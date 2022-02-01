@@ -13,7 +13,6 @@
 
 import { readLocalDefinitionsFromFileAsync } from '../local';
 import logger from '../logger';
-import { Db, MongoClient } from 'mongodb';
 import { DatabaseDiff, diffDatabaseAsync } from '../diff';
 import { connectToDatabaseAsync, Plan } from '../shared';
 import { planFromCollectionDiff } from './collections';
@@ -28,7 +27,7 @@ export async function plan (database: any, path: any, opts: { connectionString: 
     logger.info('connecting');
     let client: IDatabaseClient | undefined = undefined;
     try {
-        client = await connectToDatabaseAsync(connectionString, database);
+        client = await connectToDatabaseAsync(connectionString);
         if (!client) throw new Error('Client unexpectedly undefined');
 
         const db = client.getDatabase(database);
@@ -41,7 +40,7 @@ export async function plan (database: any, path: any, opts: { connectionString: 
     }
 }
 
-export async function planDatabase(diff: DatabaseDiff): Promise<Plan> {
+export async function planDatabase (diff: DatabaseDiff): Promise<Plan> {
     let plan = planFromCollectionDiff([], diff.collections);
     for (const collectionName in diff.indexes) {
         plan = planFromIndexDiff(plan, diff.indexes[collectionName], collectionName);

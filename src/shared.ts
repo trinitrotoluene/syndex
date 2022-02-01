@@ -16,7 +16,7 @@ import { MongoClient } from 'mongodb';
 import logger from './logger';
 import { DatabaseClient, IDatabaseClient } from './abstractions';
 
-export async function connectToDatabaseAsync (connectionString: string, database: string): Promise<IDatabaseClient> {
+export async function connectToDatabaseAsync (connectionString: string): Promise<IDatabaseClient> {
     const client = new MongoClient(connectionString);
     await client.connect();
     await client.db('admin').command({ ping: 1 });
@@ -24,10 +24,24 @@ export async function connectToDatabaseAsync (connectionString: string, database
     return DatabaseClient(client);
 }
 
-const IndexPropsValidator = z.union([z.literal(1), z.literal(-1)]);
+const IndexPropsValidator = z.union([
+    z.literal(1),
+    z.literal(-1),
+    z.literal('2d'),
+    z.literal('2dsphere'),
+    z.literal('text'),
+]);
 
-interface IndexProps {
-    [key: string]: 1 | -1;
+type IndexType =
+    | 1
+    | -1
+    | '2d'
+    | '2dsphere'
+    | 'text'
+    | 'geoHaystack';
+
+export interface IndexProps {
+    [key: string]: IndexType;
 }
 
 const CollationOptionsValidator: Schema<CollationOptions> = z.object({
