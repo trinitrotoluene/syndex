@@ -30,6 +30,7 @@ const IndexPropsValidator = z.union([
     z.literal('2d'),
     z.literal('2dsphere'),
     z.literal('text'),
+    z.literal('geoHaystack')
 ]);
 
 type IndexType =
