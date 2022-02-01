@@ -11,14 +11,14 @@
  * limitations under the License.
  */
 
-import { Collection } from 'mongodb';
 import { CreateIndexAction } from '../shared';
 import logger from '../logger';
+import { ICollection } from '../abstractions';
 
-export async function createIndex (collection: Collection, action: CreateIndexAction) {
+export async function createIndex (collection: ICollection, action: CreateIndexAction) {
     logger.debug(`creating index ${action.name} on collection ${action.collection}`);
-    await collection.createIndex(action.key, {
+    await collection.createIndexAsync(action.key, {
         name: action.name,
-        background: action.background
+        ...action.options
     });
 }

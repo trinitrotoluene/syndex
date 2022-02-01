@@ -11,11 +11,11 @@
  * limitations under the License.
  */
 
-import { Db } from 'mongodb';
 import { CreateCollectionAction } from '../shared';
 import logger from '../logger';
+import { IDatabase } from '../abstractions';
 
-export async function createCollection (db: Db, action: CreateCollectionAction) {
+export async function createCollection (db: IDatabase, action: CreateCollectionAction) {
     logger.debug(`creating collection ${action.name}`);
-    await db.createCollection(action.name);
+    await db.createCollectionAsync(action.name);
 }

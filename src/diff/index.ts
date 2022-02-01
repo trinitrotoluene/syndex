@@ -12,38 +12,41 @@
  */
 
 import logger from '../logger';
-import { Collection, Db, Document, MongoClient } from 'mongodb';
+import { Document } from 'mongodb';
 import chalk from 'chalk';
-import { getLocalDefinitionsAsync } from '../local';
+import { readLocalDefinitionsFromFileAsync } from '../local';
 import { connectToDatabaseAsync, LocalDefinitions } from '../shared';
 import { CollectionDiff, diffCollections, getRemoteCollectionsAsync } from './collections';
 import { diffIndexes, IndexDiff } from './indexes';
+import { ICollection, IDatabase, IDatabaseClient } from '../abstractions';
 
 export async function diff (database: any, path: any, opts: { connectionString: any; }) {
     const { connectionString } = opts;
-    const localDefinition = await getLocalDefinitionsAsync(path);
+    const localDefinition = await readLocalDefinitionsFromFileAsync(path);
 
     logger.info('connecting');
-    const client = new MongoClient(connectionString);
-
+    let client: IDatabaseClient | undefined = undefined;
     try {
-        const db = await connectToDatabaseAsync(client, database);
-        await diffDatabase(db, localDefinition);
+        client = await connectToDatabaseAsync(connectionString);
+        if (!client) throw new Error('Client unexpectedly undefined');
+
+        const db = client.getDatabase(database);
+        await diffDatabaseAsync(db, localDefinition);
     } finally {
         logger.info('closing connection');
-        await client.close();
+        await client?.closeAsync();
     }
 }
 
 export type DatabaseDiff = {
-    collections: CollectionDiff,
-    indexes: Record<string, IndexDiff>
+    collections: CollectionDiff;
+    indexes: Record<string, IndexDiff>;
 };
 
-export async function diffDatabase (db: Db, localDefinition: LocalDefinitions): Promise<DatabaseDiff> {
+export async function diffDatabaseAsync (db: IDatabase, localDefinition: LocalDefinitions): Promise<DatabaseDiff> {
     const collections = await getRemoteCollectionsAsync(db);
 
-    logger.info(`diffing collections for database ${chalk.blue(db.databaseName)}`);
+    logger.info(`diffing collections for database ${chalk.blue(db.name)}`);
     const collectionDiff = diffCollections(localDefinition, collections);
 
     const output: DatabaseDiff = {
@@ -53,7 +56,7 @@ export async function diffDatabase (db: Db, localDefinition: LocalDefinitions): 
 
     for (const collectionName of collectionDiff.existingCollections) {
         logger.info(`diffing indexes for collection ${chalk.blue(collectionName)}`);
-        const collection = db.collection(collectionName);
+        const collection = await db.getCollection(collectionName);
         const indexes = await getRemoteIndexesAsync(collection);
         output.indexes[collectionName] = diffIndexes(indexes, localDefinition[collectionName]);
     }
@@ -61,7 +64,8 @@ export async function diffDatabase (db: Db, localDefinition: LocalDefinitions): 
     return output;
 }
 
-async function getRemoteIndexesAsync (collection: Collection): Promise<Document[]> {
-    const indexes = await collection.indexes();
-    return indexes.filter(x => x.name !== '_id_');
+export async function getRemoteIndexesAsync (collection: ICollection): Promise<Document[]> {
+    const indexes = await collection.getIndexesAsync();
+    logger.debug(`remote indexes: ${JSON.stringify(indexes)}`);
+    return indexes.filter((x: any) => x.name !== '_id_');
 }

@@ -32,7 +32,7 @@ export function planFromIndexDiff (plan: Plan, diff: IndexDiff, collection: stri
         collection: collection,
         name: conflict.local.name,
         key: conflict.local.key,
-        background: conflict.local.background ?? false
+        options: conflict.local.options ?? {}
     }));
 
     const createIndexActions: CreateIndexAction[] = diff.newIndexes.map(newIndex => ({
@@ -40,7 +40,7 @@ export function planFromIndexDiff (plan: Plan, diff: IndexDiff, collection: stri
         collection: collection,
         name: newIndex.name,
         key: newIndex.key,
-        background: newIndex.background ?? false
+        options: newIndex.options ?? {}
     }));
 
     return [

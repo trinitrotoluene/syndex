@@ -11,33 +11,92 @@
  * limitations under the License.
  */
 
-import { z } from 'zod';
-import { Db, MongoClient } from 'mongodb';
+import { Schema, z } from 'zod';
+import { MongoClient } from 'mongodb';
 import logger from './logger';
+import { DatabaseClient, IDatabaseClient } from './abstractions';
 
-export async function connectToDatabaseAsync (client: MongoClient, database: string): Promise<Db> {
+export async function connectToDatabaseAsync (connectionString: string): Promise<IDatabaseClient> {
+    const client = new MongoClient(connectionString);
     await client.connect();
     await client.db('admin').command({ ping: 1 });
     logger.debug('connected');
-    return client.db(database);
+    return DatabaseClient(client);
 }
 
-const IndexPropsValidator = z.union([z.literal(1), z.literal(-1)]);
+const IndexPropsValidator = z.union([
+    z.literal(1),
+    z.literal(-1),
+    z.literal('2d'),
+    z.literal('2dsphere'),
+    z.literal('text'),
+    z.literal('geoHaystack')
+]);
 
-interface IndexProps {
-    [key: string]: 1 | -1;
+type IndexType =
+    | 1
+    | -1
+    | '2d'
+    | '2dsphere'
+    | 'text'
+    | 'geoHaystack';
+
+export interface IndexProps {
+    [key: string]: IndexType;
 }
 
-const IndexDefinitionValidator = z.object({
+const CollationOptionsValidator: Schema<CollationOptions> = z.object({
+    locale: z.string(),
+    caseLevel: z.boolean().optional(),
+    caseFirst: z.string().optional(),
+    strength: z.number().optional(),
+    numericOrdering: z.boolean().optional(),
+    alternate: z.string().optional(),
+    maxVariable: z.string().optional(),
+    backwards: z.boolean().optional(),
+    normalization: z.boolean().optional()
+});
+
+interface CollationOptions {
+    locale: string;
+    caseLevel?: boolean;
+    caseFirst?: string;
+    strength?: number;
+    numericOrdering?: boolean;
+    alternate?: string;
+    maxVariable?: string;
+    backwards?: boolean;
+    normalization?: boolean;
+}
+
+const IndexOptionsValidator: Schema<IndexOptions> = z.object({
+    background: z.boolean().optional(),
+    unique: z.boolean().optional(),
+    sparse: z.boolean().optional(),
+    expireAfterSeconds: z.number().optional(),
+    weights: z.record(z.number()).optional(),
+    collation: CollationOptionsValidator.optional()
+});
+
+interface IndexOptions {
+    background?: boolean;
+    unique?: boolean;
+    sparse?: boolean;
+    expireAfterSeconds?: number;
+    weights?: Record<string, number>;
+    collation?: CollationOptions;
+}
+
+const IndexDefinitionValidator: Schema<IndexDefinition> = z.object({
     name: z.string(),
     key: z.record(IndexPropsValidator),
-    background: z.boolean().optional()
+    options: IndexOptionsValidator.optional()
 });
 
 export interface IndexDefinition {
     name: string;
     key: IndexProps;
-    background?: boolean;
+    options?: IndexOptions;
 }
 
 export const LocalDefinitionsValidator = z.record(z.array(IndexDefinitionValidator));
@@ -63,7 +122,7 @@ export interface CreateIndexAction {
     collection: string;
     name: string;
     key: IndexProps;
-    background: boolean;
+    options: IndexOptions;
 }
 
 export interface DeleteIndexAction {
