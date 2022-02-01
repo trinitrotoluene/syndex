@@ -1,5 +1,3 @@
-**note: This project is still in development. Expect documentation to be incomplete or inaccurate until this notice is removed.**
-
 # Syndex
 
 > Sync your MongoDB indexes between clusters.
@@ -20,7 +18,9 @@ Syndex solves this problem by creating a single (version controlled) source of t
         "key1": 1,
         "key2": -1
       },
-      "background": true
+      "options": {
+        "background": true
+      }
     }
   ]
 }
@@ -58,3 +58,66 @@ After verifying that your index diff lines up with what your goals are, and that
 syndex sync database1 indexes.json --connection-string <your_connection_string>
 ```
 
+## Automation
+
+### GitHub Actions
+
+Your ultimate goal in using an automated index syncing tool is probably to automate the process of deploying your indexes between environments. This guide is for GitHub actions, but it should be simple to adapt it to your CI system of choice.
+
+Create the following re-usable action in your `.github/workflows` folder. For the purposes of this guide we'll assume that you called it `sync-indexes.yml`.
+
+```yaml
+name: MongoDB (index sync)
+on:
+  workflow_call:
+    inputs:
+      INDEXES_FILE:
+        required: true
+        type: string
+      DATABASE:
+        required: true
+        type: string
+    secrets:
+      MONGO_CONNECTION_STRING:
+        required: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.5.1
+        with:
+          node-version: 16.x
+      - name: Install syndex
+        run: npm i -g syndex@latest
+      - name: Sync indexes
+        run: syndex sync ${{ inputs.DATABASE }} ${{ inputs.INDEXES_FILE }} --connection-string ${{ secrets.MONGO_CONNECTION_STRING }}
+```
+
+Now you need to create one trigger per cluster you want to sync to - and add a corresponding MONGO_CONNECTION_STRING_<ENV> secret to the repository.
+
+```yaml
+name: Trigger (development)
+on:
+  workflow_dispatch:
+  push:
+    branches: [ development ]
+
+jobs:
+  trigger:
+    name: Trigger sync
+    uses: ./.github/workflows/indexes-sync.yml
+    with:
+      INDEXES_FILE: ./indexes.json
+      DATABASE: sumo-redux
+    secrets:
+      MONGO_CONNECTION_STRING: ${{ secrets.MONGO_CONNECTION_STRING_DEVELOPMENT }}
+```
+
+> Ensure that `indexes.json` exists at the path specified in `INDEXES_FILE`, or edit it to fit your repository structure.
+
+> **note: You may wish to use environment secrets to set `MONGO_CONNECTION_STRING` instead.**
+
+Now, assuming you've set up two triggers, one for `development` and one for `master` (production), use branch protection rules (or discipline) to ensure you never push to `master` and make all your index changes via pull-requests.
