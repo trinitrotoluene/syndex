@@ -5,6 +5,9 @@
       "key": {
         "weight": 1,
         "height": 1
+      },
+      "options": {
+        "background": false
       }
     }
   ]

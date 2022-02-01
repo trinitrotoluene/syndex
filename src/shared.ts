@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { Schema, z } from 'zod';
 import { Db, MongoClient } from 'mongodb';
 import logger from './logger';
 
@@ -15,16 +15,56 @@ interface IndexProps {
     [key: string]: 1 | -1;
 }
 
-const IndexDefinitionValidator = z.object({
+const CollationOptionsValidator: Schema<CollationOptions> = z.object({
+    locale: z.string(),
+    caseLevel: z.boolean().optional(),
+    caseFirst: z.string().optional(),
+    strength: z.number().optional(),
+    numericOrdering: z.boolean().optional(),
+    alternate: z.string().optional(),
+    maxVariable: z.string().optional(),
+    backwards: z.boolean().optional()
+});
+
+interface CollationOptions {
+    locale: string;
+    caseLevel?: boolean;
+    caseFirst?: string;
+    strength?: number;
+    numericOrdering?: boolean;
+    alternate?: string;
+    maxVariable?: string;
+    backwards?: boolean;
+}
+
+const IndexOptionsValidator: Schema<IndexOptions> = z.object({
+    background: z.boolean().optional(),
+    unique: z.boolean().optional(),
+    sparse: z.boolean().optional(),
+    expireAfterSeconds: z.number().optional(),
+    weights: z.record(z.number()).optional(),
+    collation: CollationOptionsValidator.optional()
+});
+
+interface IndexOptions {
+    background?: boolean;
+    unique?: boolean;
+    sparse?: boolean;
+    expireAfterSeconds?: number;
+    weights?: Record<string, number>;
+    collation?: CollationOptions;
+}
+
+const IndexDefinitionValidator: Schema<IndexDefinition> = z.object({
     name: z.string(),
     key: z.record(IndexPropsValidator),
-    background: z.boolean().optional()
+    options: IndexOptionsValidator.optional()
 });
 
 export interface IndexDefinition {
     name: string;
     key: IndexProps;
-    background?: boolean;
+    options?: IndexOptions;
 }
 
 export const LocalDefinitionsValidator = z.record(z.array(IndexDefinitionValidator));
@@ -50,7 +90,7 @@ export interface CreateIndexAction {
     collection: string;
     name: string;
     key: IndexProps;
-    background: boolean;
+    options: IndexOptions;
 }
 
 export interface DeleteIndexAction {

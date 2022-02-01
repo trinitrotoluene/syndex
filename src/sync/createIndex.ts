@@ -6,6 +6,6 @@ export async function createIndex (collection: Collection, action: CreateIndexAc
     logger.debug(`creating index ${action.name} on collection ${action.collection}`);
     await collection.createIndex(action.key, {
         name: action.name,
-        background: action.background
+        ...action.options
     });
 }
