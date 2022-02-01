@@ -1,4 +1,4 @@
-import { getLocalDefinitionsAsync } from '../local';
+import { readLocalDefinitionsFromFileAsync } from '../local';
 import logger from '../logger';
 import { MongoClient } from 'mongodb';
 import { connectToDatabaseAsync } from '../shared';
@@ -10,7 +10,7 @@ import { deleteIndex } from './deleteIndex';
 
 export async function sync (database: any, path: any, opts: { connectionString: any; }) {
     let { connectionString } = opts;
-    const localDefinition = await getLocalDefinitionsAsync(path);
+    const localDefinition = await readLocalDefinitionsFromFileAsync(path);
 
     logger.info('connecting');
     const client = new MongoClient(connectionString);

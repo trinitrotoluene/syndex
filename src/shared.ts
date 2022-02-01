@@ -23,7 +23,8 @@ const CollationOptionsValidator: Schema<CollationOptions> = z.object({
     numericOrdering: z.boolean().optional(),
     alternate: z.string().optional(),
     maxVariable: z.string().optional(),
-    backwards: z.boolean().optional()
+    backwards: z.boolean().optional(),
+    normalization: z.boolean().optional()
 });
 
 interface CollationOptions {
@@ -35,6 +36,7 @@ interface CollationOptions {
     alternate?: string;
     maxVariable?: string;
     backwards?: boolean;
+    normalization?: boolean;
 }
 
 const IndexOptionsValidator: Schema<IndexOptions> = z.object({

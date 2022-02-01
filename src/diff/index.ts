@@ -1,14 +1,14 @@
 import logger from '../logger';
 import { Collection, Db, Document, MongoClient } from 'mongodb';
 import chalk from 'chalk';
-import { getLocalDefinitionsAsync } from '../local';
+import { readLocalDefinitionsFromFileAsync } from '../local';
 import { connectToDatabaseAsync, LocalDefinitions } from '../shared';
 import { CollectionDiff, diffCollections, getRemoteCollectionsAsync } from './collections';
 import { diffIndexes, IndexDiff } from './indexes';
 
 export async function diff (database: any, path: any, opts: { connectionString: any; }) {
     let { connectionString } = opts;
-    const localDefinition = await getLocalDefinitionsAsync(path);
+    const localDefinition = await readLocalDefinitionsFromFileAsync(path);
 
     logger.info('connecting');
     const client = new MongoClient(connectionString);

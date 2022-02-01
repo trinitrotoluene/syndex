@@ -1,4 +1,4 @@
-import { getLocalDefinitionsAsync } from '../local';
+import { readLocalDefinitionsFromFileAsync } from '../local';
 import logger from '../logger';
 import { Db, MongoClient } from 'mongodb';
 import { DatabaseDiff, diffDatabase } from '../diff';
@@ -9,7 +9,7 @@ import chalk from 'chalk';
 
 export async function plan (database: any, path: any, opts: { connectionString: any; }) {
     let { connectionString } = opts;
-    const localDefinition = await getLocalDefinitionsAsync(path);
+    const localDefinition = await readLocalDefinitionsFromFileAsync(path);
 
     logger.info('connecting');
     const client = new MongoClient(connectionString);
