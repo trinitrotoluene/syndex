@@ -22,7 +22,7 @@ import { createIndex } from './createIndex';
 import { deleteIndex } from './deleteIndex';
 
 export async function sync (database: any, path: any, opts: { connectionString: any; }) {
-    let { connectionString } = opts;
+    const { connectionString } = opts;
     const localDefinition = await readLocalDefinitionsFromFileAsync(path);
 
     logger.info('connecting');

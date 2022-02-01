@@ -20,7 +20,7 @@ import { CollectionDiff, diffCollections, getRemoteCollectionsAsync } from './co
 import { diffIndexes, IndexDiff } from './indexes';
 
 export async function diff (database: any, path: any, opts: { connectionString: any; }) {
-    let { connectionString } = opts;
+    const { connectionString } = opts;
     const localDefinition = await readLocalDefinitionsFromFileAsync(path);
 
     logger.info('connecting');

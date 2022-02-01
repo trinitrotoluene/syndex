@@ -21,7 +21,7 @@ import { planFromIndexDiff } from './indexes';
 import chalk from 'chalk';
 
 export async function plan (database: any, path: any, opts: { connectionString: any; }) {
-    let { connectionString } = opts;
+    const { connectionString } = opts;
     const localDefinition = await readLocalDefinitionsFromFileAsync(path);
 
     logger.info('connecting');
