@@ -111,7 +111,7 @@ jobs:
     uses: ./.github/workflows/indexes-sync.yml
     with:
       INDEXES_FILE: ./indexes.json
-      DATABASE: sumo-redux
+      DATABASE: my-database
     secrets:
       MONGO_CONNECTION_STRING: ${{ secrets.MONGO_CONNECTION_STRING_DEVELOPMENT }}
 ```
