@@ -15,7 +15,7 @@
     "clean": "rimraf ./lib",
     "build": "npm run clean && npm run lint && tsc --build src",
     "lint": "eslint src/",
-    "test": "TS_NODE_PROJECT=tests/tsconfig.json nyc mocha"
+    "test": "cross-env TS_NODE_PROJECT=tests/tsconfig.json nyc mocha"
   },
   "repository": {
     "type": "git",
@@ -46,6 +46,7 @@
     "@typescript-eslint/eslint-plugin": "^5.10.2",
     "@typescript-eslint/parser": "^5.10.2",
     "chai": "^4.3.6",
+    "cross-env": "^7.0.3",
     "eslint": "^7.32.0",
     "eslint-config-standard": "^16.0.3",
     "eslint-plugin-import": "^2.25.4",
