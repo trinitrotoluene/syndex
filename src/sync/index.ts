@@ -13,13 +13,13 @@
 
 import { readLocalDefinitionsFromFileAsync } from '../local';
 import logger from '../logger';
-import { connectToDatabaseAsync } from '../shared';
+import {connectToDatabaseAsync, Plan} from '../shared';
 import { diffDatabaseAsync } from '../diff';
 import { planDatabase } from '../plan';
 import { createCollection } from './createCollection';
 import { createIndex } from './createIndex';
 import { deleteIndex } from './deleteIndex';
-import { IDatabaseClient } from '../abstractions';
+import {IDatabase, IDatabaseClient} from '../abstractions';
 
 export async function sync (database: any, path: any, opts: { connectionString: any; }) {
     const { connectionString } = opts;
@@ -35,21 +35,25 @@ export async function sync (database: any, path: any, opts: { connectionString: 
         const dbDiff = await diffDatabaseAsync(db, localDefinition);
         const plan = await planDatabase(dbDiff);
 
-        for (const action of plan) {
-            switch (action.type) {
-            case 'createCollection':
-                await createCollection(db, action);
-                break;
-            case 'createIndex':
-                await createIndex(await db.getCollection(action.collection), action);
-                break;
-            case 'deleteIndex':
-                await deleteIndex(await db.getCollection(action.collection), action);
-                break;
-            }
-        }
+        await executePlanAsync(plan, db);
     } finally {
         logger.info('closing connection');
         await client?.closeAsync();
+    }
+}
+
+export async function executePlanAsync(plan: Plan, db: IDatabase) {
+    for (const action of plan) {
+        switch (action.type) {
+        case 'createCollection':
+            await createCollection(db, action);
+            break;
+        case 'createIndex':
+            await createIndex(await db.getCollection(action.collection), action);
+            break;
+        case 'deleteIndex':
+            await deleteIndex(await db.getCollection(action.collection), action);
+            break;
+        }
     }
 }

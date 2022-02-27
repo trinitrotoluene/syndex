@@ -5,6 +5,8 @@ import {CollectionDiff} from '../src/diff/collections';
 import {expect} from 'chai';
 import {planFromIndexDiff} from '../src/plan/indexes';
 import {IndexDiff} from '../src/diff/indexes';
+import {DatabaseDiff} from '../src/diff';
+import {planDatabase} from '../src/plan';
 
 describe('generate plan - collection diffs', () => {
     const newCollectionsDiff: CollectionDiff = {
@@ -163,5 +165,43 @@ describe('generate plan - index diffs', () => {
 
         const generatedPlan = planFromIndexDiff([], conflictedIndexes, collName);
         expect(generatedPlan).to.deep.eq(expectedPlan);
+    });
+});
+
+describe('generate plan', () => {
+    const diff: DatabaseDiff = {
+        collections: {
+            existingCollections: ['coll1', 'coll2'],
+            newCollections: ['coll3', 'coll4']
+        },
+        indexes: {
+            coll1: {
+                unchanged: [{name: 'index1', key: {a: 1}}],
+                newIndexes: [
+                    {name: 'index2', key: {b: 1}},
+                    {name: 'index3', key: {c: 1}, options: {background: true}}
+                ],
+                conflicts: [{
+                    remote: {name: 'index4', key: {d: 1}},
+                    local: {name: 'index4', key: {d: 1, e: 1}}
+                }],
+                staleIndexes: [{name: 'index5', key: {f: 1}}]
+            }
+        },
+    };
+
+    it('end to end plan generation', async () => {
+        const expectedPlan: Plan = [
+            {type: 'createCollection', name: 'coll3'},
+            {type: 'createCollection', name: 'coll4'},
+            {type: 'deleteIndex', collection: 'coll1', name: 'index5'},
+            {type: 'deleteIndex', collection: 'coll1', name: 'index4'},
+            {type: 'createIndex', collection: 'coll1', name: 'index4', key: {d: 1, e: 1}, options: {}},
+            {type: 'createIndex', collection: 'coll1', name: 'index2', key: {b: 1}, options: {}},
+            {type: 'createIndex', collection: 'coll1', name: 'index3', key: {c: 1}, options: {background: true}},
+        ];
+        const plan = await planDatabase(diff);
+
+        expect(plan).to.deep.eq(expectedPlan);
     });
 });
