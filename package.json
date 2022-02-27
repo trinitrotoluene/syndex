@@ -24,7 +24,9 @@
   "keywords": [
     "mongodb",
     "mongo",
-    "indexes"
+    "indexes",
+    "index",
+    "sync"
   ],
   "author": "trinitrotoluene",
   "license": "Apache-2.0",
